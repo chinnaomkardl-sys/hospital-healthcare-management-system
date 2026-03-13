@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Add Diagnosis - {{ patient.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:doctor_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'doctors:view_appointments' %}">My Appointments</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'patients:patient_detail' patient.patient_id %}">{{ patient.user.get_full_name }}</a></li>
+        <li class="breadcrumb-item active">Add Diagnosis</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-stethoscope"></i> Add Diagnosis for {{ patient.user.get_full_name }}
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Patient ID: <strong>{{ patient.patient_id }}</strong></p>
+                {% if patient.allergies %}
+                <div class="alert alert-warning">
+                    <strong>Allergies:</strong> {{ patient.allergies }}
+                </div>
+                {% endif %}
+                {% if patient.medical_history %}
+                <div class="alert alert-info">
+                    <strong>Medical History:</strong> {{ patient.medical_history }}
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-group mb-3">
+                        <label for="{{ form.diagnosis.id_for_label }}">{{ form.diagnosis.label }} *</label>
+                        {{ form.diagnosis }}
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="{{ form.treatment_plan.id_for_label }}">{{ form.treatment_plan.label }} *</label>
+                        {{ form.treatment_plan }}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="{{ form.blood_pressure.id_for_label }}">{{ form.blood_pressure.label }}</label>
+                                {{ form.blood_pressure }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="{{ form.heart_rate.id_for_label }}">{{ form.heart_rate.label }}</label>
+                                {{ form.heart_rate }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="{{ form.temperature.id_for_label }}">{{ form.temperature.label }}</label>
+                                {{ form.temperature }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="{{ form.lab_results.id_for_label }}">{{ form.lab_results.label }}</label>
+                        {{ form.lab_results }}
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                        {{ form.notes }}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'patients:patient_detail' patient.patient_id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Diagnosis
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

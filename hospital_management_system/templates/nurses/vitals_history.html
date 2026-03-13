@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Vitals History - {{ patient.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Vitals History</h2>
+            <p class="text-muted">Patient: {{ patient.user.get_full_name }} ({{ patient.patient_id }})</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'patients:patient_detail' patient.patient_id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Patient
+            </a>
+            <a href="{% url 'nurses:record_vitals' patient.patient_id %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New
+            </a>
+        </div>
+    </div>
+
+    {% if vitals %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Blood Pressure</th>
+                    <th>Pulse Rate</th>
+                    <th>Temperature</th>
+                    <th>Oxygen Level</th>
+                    <th>Weight</th>
+                    <th>Recorded By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vital in vitals %}
+                <tr>
+                    <td>{{ vital.recorded_at|date:"d M Y" }} {{ vital.recorded_at|time:"H:i" }}</td>
+                    <td>{{ vital.blood_pressure }} mmHg</td>
+                    <td>{{ vital.pulse_rate }} bpm</td>
+                    <td>{{ vital.temperature }}°F</td>
+                    <td>{{ vital.oxygen_level }}%</td>
+                    <td>{{ vital.weight }} kg</td>
+                    <td>{{ vital.nurse.user.get_full_name|default:"N/A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <strong>No vitals recorded yet.</strong>
+        <a href="{% url 'nurses:record_vitals' patient.patient_id %}" class="btn btn-sm btn-primary ms-2">
+            Record First Vitals
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

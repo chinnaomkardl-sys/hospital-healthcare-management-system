@@ -1,0 +1,46 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UI Kit — Dashboard Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'ui_kit/css/ui_kit.css' %}">
+</head>
+<body class="ui-kit-preview">
+  <div class="ui-container">
+    <div class="glass-card frosted-top d-flex justify-content-between align-items-center">
+      <div>
+        <div class="title">Admin Dashboard</div>
+        <div class="small text-muted">Overview & analytics</div>
+      </div>
+      <div>
+        <button class="btn-primary-neo btn-animated ripple">New Patient</button>
+      </div>
+    </div>
+
+    <div class="row" style="display:flex; gap:12px; margin-top:16px">
+      <div style="flex:1" class="glass-card floating">
+        <div class="kpi">
+          <div class="kpi-number">{{ total_patients }}</div>
+          <div class="kpi-label">Patients</div>
+        </div>
+      </div>
+      <div style="flex:1" class="glass-card floating">
+        <div class="kpi">
+          <div class="kpi-number">{{ total_appointments }}</div>
+          <div class="kpi-label">Appointments</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+    <div class="glass-card">
+      <canvas id="appointmentsChart" data-labels='{{ appointments_chart.labels|safe }}' data-values='{{ appointments_chart.values|safe }}' height="160"></canvas>
+    </div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>

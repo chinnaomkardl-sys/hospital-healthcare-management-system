@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Registered{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 800px;">
+  <div class="card">
+    <div class="card-body">
+      <h2 class="mb-3">Patient Registered</h2>
+      <p>The patient <strong>{{ patient.user.get_full_name }}</strong> has been registered successfully.</p>
+      <p>Patient ID: <strong>{{ patient.patient_id }}</strong></p>
+
+      <a href="{% url 'reception:appointment_list' %}" class="btn btn-primary">Back to Appointments</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}My Prescriptions{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>My Prescriptions</h2>
+        </div>
+    </div>
+
+    {% if prescriptions %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>Medicine</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                    <th>Duration</th>
+                    <th>Instructions</th>
+                    <th>Prescribed By</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prescription in prescriptions %}
+                <tr>
+                    <td><strong>{{ prescription.medicine_name }}</strong></td>
+                    <td>{{ prescription.dosage }}</td>
+                    <td>{{ prescription.frequency }}</td>
+                    <td>{{ prescription.duration }}</td>
+                    <td>{{ prescription.instructions|truncatewords:10 }}</td>
+                    <td>Dr. {{ prescription.doctor.user.get_full_name }}</td>
+                    <td>{{ prescription.created_at|date:"d M Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <strong>No prescriptions yet.</strong>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

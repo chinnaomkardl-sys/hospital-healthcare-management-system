@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}All Patients{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 style="color: var(--primary-color); font-weight: 700;">
+        <i class="fas fa-users"></i> Patients Management
+    </h2>
+    <a href="{% url 'reception:register_patient' %}" class="btn btn-success">
+        <i class="fas fa-user-plus"></i> Register New Patient
+    </a>
+</div>
+
+<!-- Search & Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search by name or patient ID" 
+                       value="{{ search_query }}">
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="ADMITTED" {% if status == 'ADMITTED' %}selected{% endif %}>Admitted</option>
+                    <option value="OUTPATIENT" {% if status == 'OUTPATIENT' %}selected{% endif %}>Outpatient</option>
+                    <option value="DISCHARGED" {% if status == 'DISCHARGED' %}selected{% endif %}>Discharged</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Patients List -->
+<div class="card">
+    <div class="card-body">
+        {% if patients %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Age</th>
+                        <th>Status</th>
+                        <th>Doctor</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr>
+                        <td><strong>{{ patient.patient_id }}</strong></td>
+                        <td>{{ patient.user.get_full_name }}</td>
+                        <td>{{ patient.user.email }}</td>
+                        <td>{{ patient.age }}</td>
+                        <td>
+                            <span class="badge {% if patient.admission_status == 'ADMITTED' %}badge-danger{% elif patient.admission_status == 'DISCHARGED' %}badge-success{% else %}badge-info{% endif %}">
+                                {{ patient.get_admission_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if patient.assigned_doctor %}
+                                Dr. {{ patient.assigned_doctor.user.get_full_name }}
+                            {% else %}
+                                <span class="badge badge-secondary">Not Assigned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'patients:patient_detail' patient.patient_id %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            <a href="{% url 'patients:assign_doctor' patient.patient_id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Assign
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No patients found</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item active">
+            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        </li>
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

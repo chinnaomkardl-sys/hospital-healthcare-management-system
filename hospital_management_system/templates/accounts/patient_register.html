@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Registration{% endblock %}
+
+{% block extra_css %}
+<style>
+    .registration-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container registration-container">
+    <div style="max-width: 800px; width: 100%;">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white p-4">
+                <h3 class="mb-0"><i class="fas fa-user-plus me-2"></i>Patient Registration</h3>
+            </div>
+            <div class="card-body p-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <h5 class="mb-3 mt-3">User Account Information</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email *</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone</label>
+                            {{ form.phone }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name *</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name *</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                        {{ form.address }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                            {{ form.city }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
+                            {{ form.state }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">Password *</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password1.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password *</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password2.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3 mt-4">Medical Information</h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ patient_form.date_of_birth.id_for_label }}" class="form-label">Date of Birth *</label>
+                            {{ patient_form.date_of_birth }}
+                            {% if patient_form.date_of_birth.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in patient_form.date_of_birth.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ patient_form.gender.id_for_label }}" class="form-label">Gender *</label>
+                            {{ patient_form.gender }}
+                            {% if patient_form.gender.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in patient_form.gender.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ patient_form.blood_group.id_for_label }}" class="form-label">Blood Group</label>
+                            {{ patient_form.blood_group }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ patient_form.emergency_contact_name.id_for_label }}" class="form-label">Emergency Contact Name *</label>
+                            {{ patient_form.emergency_contact_name }}
+                            {% if patient_form.emergency_contact_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in patient_form.emergency_contact_name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ patient_form.emergency_contact.id_for_label }}" class="form-label">Emergency Contact Phone *</label>
+                            {{ patient_form.emergency_contact }}
+                            {% if patient_form.emergency_contact.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in patient_form.emergency_contact.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ patient_form.allergies.id_for_label }}" class="form-label">Allergies</label>
+                        {{ patient_form.allergies }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ patient_form.medical_history.id_for_label }}" class="form-label">Medical History</label>
+                        {{ patient_form.medical_history }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 btn-lg mt-3">
+                        <i class="fas fa-user-plus"></i> Register
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="mb-2">Already have an account?</p>
+                    <a href="{% url 'accounts:login' 'PATIENT' %}" class="btn btn-outline-primary btn-sm">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

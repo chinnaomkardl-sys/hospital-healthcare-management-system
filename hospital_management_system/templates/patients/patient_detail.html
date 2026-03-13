@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patient.user.get_full_name }} - Patient Details{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:admin_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'patients:patient_list' %}">Patients</a></li>
+        <li class="breadcrumb-item active">{{ patient.user.get_full_name }}</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-user"></i> {{ patient.user.get_full_name }}
+        </h2>
+        <p class="text-muted">Patient ID: <strong>{{ patient.patient_id }}</strong></p>
+    </div>
+    <div>
+        <a href="{% url 'patients:assign_doctor' patient.patient_id %}" class="btn btn-primary">
+            <i class="fas fa-user-md"></i> Assign Doctor/Nurse
+        </a>
+        {% if request.user.role == 'DOCTOR' %}
+        <a href="{% url 'doctors:add_diagnosis' patient.patient_id %}" class="btn btn-info">
+            <i class="fas fa-stethoscope"></i> Add Diagnosis
+        </a>
+        <a href="{% url 'doctors:add_prescription' patient.patient_id %}" class="btn btn-success">
+            <i class="fas fa-prescription"></i> Add Prescription
+        </a>
+        <a href="{% url 'doctors:upload_report' patient.patient_id %}" class="btn btn-warning">
+            <i class="fas fa-file-medical-alt"></i> Upload Report
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Personal Information -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="detail-section">
+            <h4>Personal Information</h4>
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Full Name</label>
+                    <p>{{ patient.user.get_full_name }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Date of Birth</label>
+                    <p>{{ patient.date_of_birth|date:"d M Y" }} ({{ patient.age }} years)</p>
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Gender</label>
+                    <p>{{ patient.get_gender_display }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Blood Group</label>
+                    <p>{{ patient.blood_group|default:"Not specified" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="col-md-6">
+        <div class="detail-section">
+            <h4>Contact Information</h4>
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Email</label>
+                    <p>{{ patient.user.email }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Phone</label>
+                    <p>{{ patient.user.phone|default:"Not provided" }}</p>
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Address</label>
+                    <p>{{ patient.user.address|default:"Not provided" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medical Information -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="detail-section">
+            <h4>Medical Information</h4>
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Status</label>
+                    <p>
+                        <span class="badge {% if patient.admission_status == 'ADMITTED' %}badge-danger{% elif patient.admission_status == 'DISCHARGED' %}badge-success{% else %}badge-info{% endif %}">
+                            {{ patient.get_admission_status_display }}
+                        </span>
+                    </p>
+                </div>
+                <div class="detail-item">
+                    <label>Assigned Doctor</label>
+                    <p>
+                        {% if patient.assigned_doctor %}
+                            Dr. {{ patient.assigned_doctor.user.get_full_name }}
+                        {% else %}
+                            <span class="badge badge-secondary">Not Assigned</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Assigned Nurse</label>
+                    <p>
+                        {% if patient.assigned_nurse %}
+                            {{ patient.assigned_nurse.user.get_full_name }}
+                        {% else %}
+                            <span class="badge badge-secondary">Not Assigned</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            {% if patient.admission_date %}
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Admission Date</label>
+                    <p>{{ patient.admission_date|date:"d M Y" }}</p>
+                </div>
+                {% if patient.discharge_date %}
+                <div class="detail-item">
+                    <label>Discharge Date</label>
+                    <p>{{ patient.discharge_date|date:"d M Y" }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="detail-section">
+            <h4>Emergency Contact</h4>
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Name</label>
+                    <p>{{ patient.emergency_contact_name }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Phone</label>
+                    <p>{{ patient.emergency_contact }}</p>
+                </div>
+            </div>
+            
+            {% if patient.allergies %}
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Allergies</label>
+                    <p>{{ patient.allergies }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if patient.medical_history %}
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Medical History</label>
+                    <p>{{ patient.medical_history }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Appointments -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar"></i> Recent Appointments
+            </div>
+            <div class="card-body">
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Doctor</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in appointments|slice:":5" %}
+                            <tr>
+                                <td>{{ apt.appointment_date|date:"d M Y" }} at {{ apt.appointment_time|time:"H:i" }}</td>
+                                <td>Dr. {{ apt.doctor.user.first_name }}</td>
+                                <td>{{ apt.reason }}</td>
+                                <td><span class="badge badge-info">{{ apt.get_status_display }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No appointments</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medical Reports & Prescriptions -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-medical"></i> Medical Reports
+            </div>
+            <div class="card-body">
+                {% if medical_reports %}
+                <ul class="list-group list-group-flush">
+                    {% for report in medical_reports|slice:":3" %}
+                    <li class="list-group-item">
+                        <small class="text-muted">{{ report.report_date|date:"d M Y" }}</small><br>
+                        <small>Dr. {{ report.doctor.user.first_name }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No reports</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-pills"></i> Prescriptions
+            </div>
+            <div class="card-body">
+                {% if prescriptions %}
+                <ul class="list-group list-group-flush">
+                    {% for rx in prescriptions|slice:":3" %}
+                    <li class="list-group-item">
+                        <strong>{{ rx.medicine_name }}</strong><br>
+                        <small>{{ rx.dosage }} - {{ rx.frequency }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No prescriptions</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

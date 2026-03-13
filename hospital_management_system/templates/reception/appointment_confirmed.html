@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Confirmed{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:800px;">
+  <div class="card">
+    <div class="card-body">
+      <h2 class="mb-3">Appointment Confirmed</h2>
+      <p>Appointment <strong>{{ appointment.appointment_id }}</strong> has been booked for <strong>{{ appointment.patient.user.get_full_name }}</strong>.</p>
+      <p>Doctor: <strong>Dr. {{ appointment.doctor.user.get_full_name }}</strong></p>
+      <p>Date: <strong>{{ appointment.appointment_date }}</strong> Time: <strong>{{ appointment.appointment_time }}</strong></p>
+
+      <a href="{% url 'reception:appointment_list' %}" class="btn btn-primary">Back to Appointments</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

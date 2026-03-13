@@ -1,0 +1,127 @@
+i8{% extends "base.html" %}
+
+{% block title %}Claim Details - {{ claim.claim_id }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'billing:billing_list' %}">Billing</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'billing:insurance_claim_list' %}">Insurance Claims</a></li>
+        <li class="breadcrumb-item active">{{ claim.claim_id }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Claim Details -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-file-contract"></i> Claim Details - {{ claim.claim_id }}
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Patient:</th>
+                        <td>{{ claim.patient.user.get_full_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Patient ID:</th>
+                        <td>{{ claim.patient.patient_id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Insurance Provider:</th>
+                        <td>{{ claim.insurance_provider.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Policy Number:</th>
+                        <td>{{ claim.policy_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>Billing:</th>
+                        <td><a href="{% url 'billing:billing_detail' claim.billing.pk %}">{{ claim.billing.billing_id }}</a></td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge {% if claim.status == 'APPROVED' %}badge-success{% elif claim.status == 'REJECTED' %}badge-danger{% elif claim.status == 'UNDER_REVIEW' %}badge-warning{% else %}badge-info{% endif %}">
+                                {{ claim.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Submitted Date:</th>
+                        <td>{{ claim.submitted_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% if claim.processed_date %}
+                    <tr>
+                        <th>Processed Date:</th>
+                        <td>{{ claim.processed_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Amount Details -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-dollar-sign"></i> Amount Details
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Claim Amount:</th>
+                        <td><strong>${{ claim.claim_amount }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Approved Amount:</th>
+                        <td><strong>{% if claim.approved_amount %}${{ claim.approved_amount }}{% else %}-{% endif %}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        {% if claim.notes %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-sticky-note"></i> Notes
+            </div>
+            <div class="card-body">
+                <p>{{ claim.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Rejection Reason -->
+        {% if claim.rejection_reason %}
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-times-circle"></i> Rejection Reason
+            </div>
+            <div class="card-body">
+                <p>{{ claim.rejection_reason }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <!-- Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-cogs"></i> Actions
+            </div>
+            <div class="card-body">
+                <a href="{% url 'billing:update_insurance_claim' claim.pk %}" class="btn btn-primary btn-block mb-2">
+                    <i class="fas fa-edit"></i> Update Status
+                </a>
+                <a href="{% url 'billing:billing_detail' claim.billing.pk %}" class="btn btn-info btn-block mb-2">
+                    <i class="fas fa-file-invoice"></i> View Billing
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

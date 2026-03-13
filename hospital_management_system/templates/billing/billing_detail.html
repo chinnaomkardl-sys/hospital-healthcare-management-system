@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Bill Details - {{ billing.billing_id }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'billing:billing_list' %}">Billing</a></li>
+        <li class="breadcrumb-item active">{{ billing.billing_id }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Bill Details -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-file-invoice"></i> Bill Details - {{ billing.billing_id }}
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Patient:</th>
+                        <td>{{ billing.patient.user.get_full_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Patient ID:</th>
+                        <td>{{ billing.patient.patient_id }}</td>
+                    </tr>
+                    {% if billing.doctor %}
+                    <tr>
+                        <th>Doctor:</th>
+                        <td>Dr. {{ billing.doctor.user.get_full_name }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge {% if billing.status == 'PAID' %}badge-success{% elif billing.status == 'PENDING' %}badge-warning{% elif billing.status == 'OVERDUE' %}badge-danger{% else %}badge-info{% endif %}">
+                                {{ billing.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Date:</th>
+                        <td>{{ billing.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% if billing.due_date %}
+                    <tr>
+                        <th>Due Date:</th>
+                        <td>{{ billing.due_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Bill Items -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-list"></i> Bill Items
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if billing.consultation_fee > 0 %}
+                        <tr>
+                            <td>Consultation Fee</td>
+                            <td>${{ billing.consultation_fee }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if billing.medicine_cost > 0 %}
+                        <tr>
+                            <td>Medicine Cost</td>
+                            <td>${{ billing.medicine_cost }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if billing.test_cost > 0 %}
+                        <tr>
+                            <td>Test/Lab Cost</td>
+                            <td>${{ billing.test_cost }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if billing.hospital_charges > 0 %}
+                        <tr>
+                            <td>Hospital Charges</td>
+                            <td>${{ billing.hospital_charges }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if billing.other_charges > 0 %}
+                        <tr>
+                            <td>Other Charges</td>
+                            <td>${{ billing.other_charges }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="table-active">
+                            <td><strong>Subtotal</strong></td>
+                            <td><strong>${{ billing.subtotal }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Tax (10%)</td>
+                            <td>${{ billing.tax }}</td>
+                        </tr>
+                        {% if billing.discount > 0 %}
+                        <tr>
+                            <td>Discount</td>
+                            <td>-${{ billing.discount }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="table-success">
+                            <td><strong>Total Amount</strong></td>
+                            <td><strong>${{ billing.total_amount }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history"></i> Payment History
+            </div>
+            <div class="card-body">
+                {% if payments %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Transaction ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.created_at|date:"M d, Y H:i" }}</td>
+                            <td>${{ payment.amount }}</td>
+                            <td>{{ payment.get_payment_method_display }}</td>
+                            <td>{{ payment.transaction_id|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No payments recorded yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Payment Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-dollar-sign"></i> Payment Summary
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Total Amount:</th>
+                        <td><strong>${{ billing.total_amount }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Amount Paid:</th>
+                        <td><strong>${{ billing.amount_paid }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Balance:</th>
+                        <td><strong class="{% if billing.get_balance > 0 %}text-danger{% else %}text-success{% endif %}">${{ billing.get_balance }}</strong></td>
+                    </tr>
+                </table>
+                
+                {% if billing.status != 'PAID' %}
+                <a href="{% url 'billing:add_payment' billing.id %}" class="btn btn-success btn-block">
+                    <i class="fas fa-dollar-sign"></i> Record Payment
+                </a>
+                <a href="{% url 'billing:payment_gateway' billing.id %}" class="btn btn-primary btn-block mt-2">
+                    <i class="fas fa-credit-card"></i> Online Payment
+                </a>
+                {% endif %}
+                {% if reportlab_available %}
+                <a href="{% url 'billing:generate_pdf' billing.id %}" class="btn btn-info btn-block mt-2" target="_blank">
+                    <i class="fas fa-file-pdf"></i> Download PDF
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if billing.notes %}
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-sticky-note"></i> Notes
+            </div>
+            <div class="card-body">
+                <p>{{ billing.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Doctors{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 style="color: var(--primary-color); font-weight: 700;">
+        <i class="fas fa-user-md"></i> Doctors Management
+    </h2>
+</div>
+
+<!-- Stats -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-user-md"></i></div>
+            <div class="number">{{ total_doctors }}</div>
+            <div class="label">Total Doctors</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <div class="number">{{ available_doctors }}</div>
+            <div class="label">Available</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Search by name" value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <select name="specialization" class="form-select">
+                    <option value="">All Specializations</option>
+                    {% for spec_key, spec_val in specializations.items %}
+                    <option value="{{ spec_key }}" {% if specialization == spec_key %}selected{% endif %}>{{ spec_val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="availability" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="available" {% if availability == 'available' %}selected{% endif %}>Available</option>
+                    <option value="unavailable" {% if availability == 'unavailable' %}selected{% endif %}>Unavailable</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Doctors List -->
+<div class="card">
+    <div class="card-body">
+        {% if doctors %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>License</th>
+                        <th>Specialization</th>
+                        <th>Department</th>
+                        <th>Experience</th>
+                        <th>Status</th>
+                        <th>Fee</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in doctors %}
+                    <tr>
+                        <td>Dr. {{ doc.user.get_full_name }}</td>
+                        <td>{{ doc.license_number }}</td>
+                        <td>{{ doc.get_specialization_display }}</td>
+                        <td>{{ doc.department.name|default:"N/A" }}</td>
+                        <td>{{ doc.experience_years }} years</td>
+                        <td>
+                            <span class="badge {% if doc.is_available %}badge-success{% else %}badge-danger{% endif %}">
+                                {% if doc.is_available %}Available{% else %}Unavailable{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ doc.consultation_fee }}</td>
+                        <td>
+                            <a href="{% url 'doctors:doctor_detail' doc.user.id %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No doctors found</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

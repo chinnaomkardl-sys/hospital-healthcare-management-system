@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Purchase Order Details{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'pharmacy:dashboard' %}">Pharmacy</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'pharmacy:purchase_order_list' %}">Purchase Orders</a></li>
+        <li class="breadcrumb-item active">{{ order.order_id }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4><i class="fas fa-shopping-cart"></i> Purchase Order {{ order.order_id }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Supplier:</strong> {{ order.supplier.name }}</p>
+                        <p><strong>Order Date:</strong> {{ order.order_date|date:"M d, Y" }}</p>
+                        <p><strong>Expected Delivery:</strong> {{ order.expected_delivery_date|default:"Not Set" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> 
+                            <span class="badge bg-{% if order.status == 'RECEIVED' %}success{% elif order.status == 'PARTIALLY_RECEIVED' %}info{% else %}primary{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </p>
+                        <p><strong>Total Amount:</strong> ${{ order.total_amount }}</p>
+                        <p><strong>Received Date:</strong> {{ order.received_date|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Items -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Order Items</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Ordered Qty</th>
+                            <th>Received Qty</th>
+                            <th>Unit Cost</th>
+                            <th>Total Cost</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ item.medicine.name }}</td>
+                            <td>{{ item.ordered_quantity }}</td>
+                            <td>{{ item.received_quantity }}</td>
+                            <td>${{ item.unit_cost }}</td>
+                            <td>${{ item.total_cost }}</td>
+                            <td>
+                                {% if item.is_received %}
+                                <span class="badge bg-success">Received</span>
+                                {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        {% if order.status != 'RECEIVED' and order.status != 'CANCELLED' %}
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-dispensing"></i> Receive Items</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'pharmacy:receive_purchase_order' order.pk %}">
+                    {% csrf_token %}
+                    {% for item in order.items.all %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ item.medicine.name }}</label>
+                        <input type="number" name="received_{{ item.pk }}" class="form-control" min="0" max="{{ item.ordered_quantity }}" value="{{ item.ordered_quantity|add:'-'|add:item.received_quantity }}">
+                        <small class="text-muted">Pending: {{ item.ordered_quantity|add:'-'|add:item.received_quantity }}</small>
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-success w-100">Receive All</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

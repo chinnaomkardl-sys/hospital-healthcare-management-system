@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Nurse Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-chart-line"></i> Nurse Dashboard
+        </h2>
+        <p class="text-muted">Welcome, {{ user.first_name }}</p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <div class="number">{{ total_patients }}</div>
+            <div class="label">Assigned Patients</div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-heartbeat"></i></div>
+            <div class="number">{{ nurse.shift }}</div>
+            <div class="label">Shift</div>
+        </div>
+    </div>
+</div>
+
+<!-- Nurses Not Working Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-user-nurse"></i> Nurses Not Working (Available for Selection)
+            </div>
+            <div class="card-body">
+                {% if unavailable_nurses %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>License Number</th>
+                                <th>Department</th>
+                                <th>Shift</th>
+                                <th>Experience</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for unavailable_nurse in unavailable_nurses %}
+                            <tr>
+                                <td>{{ unavailable_nurse.user.get_full_name }}</td>
+                                <td>{{ unavailable_nurse.license_number }}</td>
+                                <td>{{ unavailable_nurse.department.name|default:"General" }}</td>
+                                <td>{{ unavailable_nurse.get_shift_display }}</td>
+                                <td>{{ unavailable_nurse.experience_years }} years</td>
+                                <td>
+                                    <span class="badge badge-danger">Not Working</span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'nurses:nurse_detail' unavailable_nurse.user.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No nurses currently unavailable</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assigned Patients -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-users"></i> My Assigned Patients
+            </div>
+            <div class="card-body">
+                {% if assigned_patients %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Patient ID</th>
+                                    <th>Age</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in assigned_patients %}
+                                <tr>
+                                    <td>{{ patient.user.get_full_name }}</td>
+                                    <td>{{ patient.patient_id }}</td>
+                                    <td>{{ patient.age }} years</td>
+                                    <td>
+                                        <span class="badge {% if patient.admission_status == 'ADMITTED' %}badge-danger{% elif patient.admission_status == 'DISCHARGED' %}badge-success{% else %}badge-info{% endif %}">
+                                            {{ patient.get_admission_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'patients:patient_detail' patient.patient_id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <a href="{% url 'nurses:record_vitals' patient.patient_id %}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-heartbeat"></i> Record Vitals
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No patients assigned to you yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Patient Appointments Schedule -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar-alt"></i> Patient Appointments Schedule
+            </div>
+            <div class="card-body">
+                {% if upcoming_appointments %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for apt in upcoming_appointments %}
+                                <tr>
+                                    <td>{{ apt.appointment_date|date:"d M Y" }}</td>
+                                    <td>{{ apt.appointment_time }}</td>
+                                    <td>{{ apt.patient.user.get_full_name }}</td>
+                                    <td>Dr. {{ apt.doctor.user.get_full_name }}</td>
+                                    <td>{{ apt.reason }}</td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ apt.get_status_display }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No upcoming appointments for your patients</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

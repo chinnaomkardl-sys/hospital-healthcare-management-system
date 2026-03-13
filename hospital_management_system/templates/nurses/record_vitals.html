@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Record Vitals - {{ patient.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Record Patient Vitals</h2>
+            <p class="text-muted">Patient: {{ patient.user.get_full_name }} ({{ patient.patient_id }})</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'patients:patient_detail' patient.patient_id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Patient
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.blood_pressure.id_for_label }}" class="form-label">Blood Pressure</label>
+                                <input type="text" class="form-control" id="{{ form.blood_pressure.id_for_label }}" 
+                                       name="{{ form.blood_pressure.name }}" placeholder="e.g., 120/80" required>
+                                {% if form.blood_pressure.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.blood_pressure.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.pulse_rate.id_for_label }}" class="form-label">Pulse Rate (BPM)</label>
+                                <input type="number" class="form-control" id="{{ form.pulse_rate.id_for_label }}" 
+                                       name="{{ form.pulse_rate.name }}" placeholder="e.g., 72" required>
+                                {% if form.pulse_rate.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.pulse_rate.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.temperature.id_for_label }}" class="form-label">Temperature (°F)</label>
+                                <input type="number" step="0.1" class="form-control" id="{{ form.temperature.id_for_label }}" 
+                                       name="{{ form.temperature.name }}" placeholder="e.g., 98.6" required>
+                                {% if form.temperature.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.temperature.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.oxygen_level.id_for_label }}" class="form-label">Oxygen Level (SpO2 %)</label>
+                                <input type="number" class="form-control" id="{{ form.oxygen_level.id_for_label }}" 
+                                       name="{{ form.oxygen_level.name }}" placeholder="e.g., 98" required>
+                                {% if form.oxygen_level.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.oxygen_level.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.weight.id_for_label }}" class="form-label">Weight (kg)</label>
+                                <input type="number" step="0.1" class="form-control" id="{{ form.weight.id_for_label }}" 
+                                       name="{{ form.weight.name }}" placeholder="e.g., 70.5" required>
+                                {% if form.weight.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.weight.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                            <textarea class="form-control" id="{{ form.notes.id_for_label }}" 
+                                      name="{{ form.notes.name }}" rows="3" placeholder="Additional observations..."></textarea>
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.notes.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Vitals
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle"></i> Patient Info
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ patient.user.get_full_name }}</p>
+                    <p><strong>Patient ID:</strong> {{ patient.patient_id }}</p>
+                    <p><strong>Age:</strong> {{ patient.age }} years</p>
+                    <p><strong>Gender:</strong> {{ patient.get_gender_display }}</p>
+                    <p><strong>Blood Group:</strong> {{ patient.blood_group|default:"N/A" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

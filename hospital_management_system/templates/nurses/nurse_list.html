@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Nurses{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 style="color: var(--primary-color); font-weight: 700;">
+        <i class="fas fa-user-nurse"></i> Nurses Management
+    </h2>
+</div>
+
+<!-- Stats -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-user-nurse"></i></div>
+            <div class="number">{{ total_nurses }}</div>
+            <div class="label">Total Nurses</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <div class="number">{{ available_nurses }}</div>
+            <div class="label">Available</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Search by name" value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <select name="shift" class="form-select">
+                    <option value="">All Shifts</option>
+                    {% for shift_key, shift_val in shifts %}
+                    <option value="{{ shift_key }}" {% if shift == shift_key %}selected{% endif %}>{{ shift_val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="availability" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="available" {% if availability == 'available' %}selected{% endif %}>Available</option>
+                    <option value="unavailable" {% if availability == 'unavailable' %}selected{% endif %}>Unavailable</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Nurses List -->
+<div class="card">
+    <div class="card-body">
+        {% if nurses %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>License</th>
+                        <th>Department</th>
+                        <th>Shift</th>
+                        <th>Experience</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nurse in nurses %}
+                    <tr>
+                        <td>{{ nurse.user.get_full_name }}</td>
+                        <td>{{ nurse.license_number }}</td>
+                        <td>{{ nurse.department.name|default:"General" }}</td>
+                        <td>{{ nurse.get_shift_display }}</td>
+                        <td>{{ nurse.experience_years }} years</td>
+                        <td>
+                            <span class="badge {% if nurse.is_available %}badge-success{% else %}badge-danger{% endif %}">
+                                {% if nurse.is_available %}Available{% else %}Unavailable{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'nurses:nurse_detail' nurse.user.id %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No nurses found</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

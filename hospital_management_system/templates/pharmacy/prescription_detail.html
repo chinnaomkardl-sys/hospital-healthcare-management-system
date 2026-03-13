@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Prescription Details{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'pharmacy:dashboard' %}">Pharmacy</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'pharmacy:prescription_list' %}">Prescriptions</a></li>
+        <li class="breadcrumb-item active">{{ prescription.prescription_id }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4><i class="fas fa-prescription"></i> Prescription {{ prescription.prescription_id }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Patient:</strong> {{ prescription.patient.user.get_full_name }}</p>
+                        <p><strong>Doctor:</strong> Dr. {{ prescription.doctor.user.get_full_name }}</p>
+                        <p><strong>Date:</strong> {{ prescription.prescription_date|date:"M d, Y" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Valid Until:</strong> {{ prescription.valid_until|date:"M d, Y" }}</p>
+                        <p><strong>Status:</strong> 
+                            <span class="badge bg-{% if prescription.status == 'DISPENSED' %}success{% elif prescription.status == 'PENDING' %}warning{% else %}info{% endif %}">
+                                {{ prescription.get_status_display }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                {% if prescription.diagnosis %}
+                <div class="mt-3">
+                    <h5>Diagnosis</h5>
+                    <p>{{ prescription.diagnosis }}</p>
+                </div>
+                {% endif %}
+                {% if prescription.notes %}
+                <div class="mt-3">
+                    <h5>Notes</h5>
+                    <p>{{ prescription.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Prescription Items -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Medicines</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Dosage</th>
+                            <th>Frequency</th>
+                            <th>Duration</th>
+                            <th>Qty Prescribed</th>
+                            <th>Qty Dispensed</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in prescription.items.all %}
+                        <tr>
+                            <td>{{ item.medicine.name }}</td>
+                            <td>{{ item.dosage }}</td>
+                            <td>{{ item.frequency }}</td>
+                            <td>{{ item.duration|default:"-" }}</td>
+                            <td>{{ item.prescribed_quantity }}</td>
+                            <td>{{ item.dispensed_quantity }}</td>
+                            <td>
+                                {% if item.is_dispensed %}
+                                <span class="badge bg-success">Dispensed</span>
+                                {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        {% if prescription.status != 'DISPENSED' %}
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-dispensing"></i> Dispense Medicines</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'pharmacy:dispense_prescription' prescription.pk %}">
+                    {% csrf_token %}
+                    {% for item in prescription.items.all %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ item.medicine.name }}</label>
+                        <input type="number" name="quantity_{{ item.pk }}" class="form-control" min="0" max="{{ item.prescribed_quantity }}" value="{{ item.prescribed_quantity }}">
+                        <small class="text-muted">Available: {{ item.medicine.current_stock }}</small>
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-success w-100">Dispense All</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

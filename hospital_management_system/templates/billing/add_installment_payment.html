@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Record Installment Payment{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'billing:billing_list' %}">Billing</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'billing:installment_plan_list' %}">Installment Plans</a><li class="breadcrumb-item"><a href</li>
+        ="{% url 'billing:installment_plan_detail' plan.pk %}">{{ plan.plan_id }}</a></li>
+        <li class="breadcrumb-item active">Record Payment</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-dollar-sign"></i> Plan Summary
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Total Amount:</th>
+                        <td>${{ plan.total_amount }}</td>
+                    </tr>
+                    <tr>
+                        <th>Amount Paid:</th>
+                        <td>${{ plan.amount_paid }}</td>
+                    </tr>
+                    <tr>
+                        <th>Remaining:</th>
+                        <td>${{ plan.get_remaining_amount }}</td>
+                    </tr>
+                    <tr>
+                        <th>Installment Amount:</th>
+                        <td>${{ plan.installment_amount }}</td>
+                    </tr>
+                    <tr>
+                        <th>Installments Paid:</th>
+                        <td>{{ plan.installments_paid }} / {{ plan.number_of_installments }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-credit-card"></i> Record Payment
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary mt-3">
+                        <i class="fas fa-save"></i> Record Payment
+                    </button>
+                    <a href="{% url 'billing:installment_plan_detail' plan.pk %}" class="btn btn-secondary mt-3">
+                        Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

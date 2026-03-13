@@ -1,0 +1,232 @@
++{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-chart-line"></i> Admin Dashboard
+        </h2>
+        <p class="text-muted">Hospital Management Summary</p>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="row mb-4 stagger-animation">
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card primary">
+            <div class="kpi-icon"><i class="fas fa-users"></i></div>
+            <div class="kpi-number">{{ total_patients }}</div>
+            <div class="kpi-label">Total Patients</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> +12%</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card success">
+            <div class="kpi-icon"><i class="fas fa-user-md"></i></div>
+            <div class="kpi-number">{{ total_doctors }}</div>
+            <div class="kpi-label">Total Doctors</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> +5%</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card warning">
+            <div class="kpi-icon"><i class="fas fa-user-nurse"></i></div>
+            <div class="kpi-number">{{ total_nurses }}</div>
+            <div class="kpi-label">Total Nurses</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> +8%</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card info">
+            <div class="kpi-icon"><i class="fas fa-hospital"></i></div>
+            <div class="kpi-number">{{ total_departments }}</div>
+            <div class="kpi-label">Departments</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> +3%</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-area"></i> Appointments (last 7 days)
+            </div>
+            <div class="card-body">
+                <canvas id="appointmentsChart" data-labels='{{ appointments_chart.labels|safe }}' data-values='{{ appointments_chart.values|safe }}' height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card text-center">
+            <div class="card-header">
+                <i class="fas fa-user-check"></i> Recent Patients
+            </div>
+            <div class="card-body">
+                {% if recent_admissions %}
+                    <div class="d-flex flex-column align-items-center gap-3">
+                        {% for admission in recent_admissions|slice:":3" %}
+                        <div class="d-flex align-items-center w-100">
+                            <img src="{% static 'img/avatars/avatar'|add:forloop.counter|stringformat:'d'|add:'.svg' %}" alt="avatar" width="48" height="48" class="rounded-circle me-3">
+                            <div class="text-start">
+                                <div class="fw-bold">{{ admission.user.get_full_name }}</div>
+                                <div class="text-muted small">{{ admission.admission_date|date:'d M' }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No recent admissions</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-calendar"></i></div>
+            <div class="number">{{ total_appointments }}</div>
+            <div class="label">Total Appointments</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-clock"></i></div>
+            <div class="number">{{ upcoming_appointments }}</div>
+            <div class="label">Upcoming (7 Days)</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Data -->
+<div class="row">
+    <!-- Recent Admissions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-hospital-user"></i> Recent Admissions
+            </div>
+            <div class="card-body">
+                {% if recent_admissions %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Admission Date</th>
+                                    <th>Doctor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admission in recent_admissions %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'patients:patient_detail' admission.patient_id %}">
+                                            {{ admission.user.get_full_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ admission.admission_date|date:"d M Y" }}</td>
+                                    <td>
+                                        {% if admission.assigned_doctor %}
+                                            Dr. {{ admission.assigned_doctor.user.first_name }}
+                                        {% else %}
+                                            <span class="badge badge-secondary">Not Assigned</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No recent admissions</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Appointments -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar-check"></i> Upcoming Appointments
+            </div>
+            <div class="card-body">
+                {% if recent_appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date & Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for apt in recent_appointments %}
+                                <tr>
+                                    <td>{{ apt.patient.user.first_name }}</td>
+                                    <td>Dr. {{ apt.doctor.user.first_name }}</td>
+                                    <td>{{ apt.appointment_date|date:"d M" }} at {{ apt.appointment_time }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No upcoming appointments</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bolt"></i> Quick Actions
+            </div>
+            <div class="card-body">
+                <a href="{% url 'accounts:doctor_register' %}" class="btn btn-success me-2">
+                    <i class="fas fa-user-md"></i> Register Doctor
+                </a>
+                <a href="{% url 'accounts:nurse_register' %}" class="btn btn-warning me-2">
+                    <i class="fas fa-user-nurse"></i> Register Nurse
+                </a>
+                <a href="{% url 'accounts:receptionist_register' %}" class="btn btn-info me-2">
+                    <i class="fas fa-headset"></i> Register Receptionist
+                </a>
+                <a href="{% url 'patients:patient_list' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-users"></i> Manage Patients
+                </a>
+                <a href="{% url 'doctors:doctor_list' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-user-md"></i> Manage Doctors
+                </a>
+                <a href="{% url 'nurses:nurse_list' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-user-nurse"></i> Manage Nurses
+                </a>
+                <a href="{% url 'reports:medical_report_list' %}" class="btn btn-primary">
+                    <i class="fas fa-file-medical"></i> View Reports
+                </a>
+                <a href="{% url 'billing:financial_reports' %}" class="btn btn-info me-2">
+                    <i class="fas fa-chart-line"></i> Financial Reports
+                </a>
+                <a href="{% url 'billing:insurance_claim_list' %}" class="btn btn-warning me-2">
+                    <i class="fas fa-file-contract"></i> Insurance Claims
+                </a>
+                <a href="{% url 'billing:installment_plan_list' %}" class="btn btn-secondary me-2">
+                    <i class="fas fa-calendar-check"></i> Installments
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

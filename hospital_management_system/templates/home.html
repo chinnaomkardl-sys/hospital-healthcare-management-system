@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Hospital Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .home-hero {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .home-hero::before {
+        content: '';
+        position: absolute;
+        width: 150%;
+        height: 150%;
+        background: radial-gradient(circle, rgba(26, 115, 232, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(0, 137, 123, 0.08) 0%, transparent 40%);
+        animation: float 20s ease-in-out infinite;
+    }
+    
+    .hero-icon {
+        font-size: 8rem;
+        color: var(--primary-color);
+        animation: bounce 3s infinite;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #1a73e8, #00897b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 0.8s ease forwards;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+        color: #5f6368;
+        max-width: 600px;
+        margin: 0 auto 40px;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 0.8s ease 0.2s forwards;
+        opacity: 0;
+    }
+    
+    .hero-buttons {
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 0.8s ease 0.4s forwards;
+        opacity: 0;
+    }
+    
+    .hero-btn {
+        padding: 16px 36px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .hero-btn-primary {
+        background: linear-gradient(135deg, #1a73e8, #4a90e2);
+        color: white;
+        border: none;
+        box-shadow: 0 10px 30px rgba(26, 115, 232, 0.3);
+    }
+    
+    .hero-btn-primary:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(26, 115, 232, 0.4);
+    }
+    
+    .hero-btn-outline {
+        background: white;
+        color: #1a73e8;
+        border: 2px solid #1a73e8;
+    }
+    
+    .hero-btn-outline:hover {
+        background: #1a73e8;
+        color: white;
+        transform: translateY(-5px);
+    }
+    
+    .feature-section {
+        padding: 80px 0;
+    }
+    
+    .section-title {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+    
+    .section-title h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #202124;
+        margin-bottom: 15px;
+    }
+    
+    .section-title p {
+        color: #5f6368;
+        font-size: 1.1rem;
+    }
+    
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px 30px;
+        text-align: center;
+        height: 100%;
+        transition: all 0.4s ease;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #1a73e8, #00897b);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+        border-color: #e8eaed;
+    }
+    
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 25px;
+        transition: all 0.4s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .feature-card.doctor .feature-icon {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.2));
+        color: #3498db;
+    }
+    
+    .feature-card.patient .feature-icon {
+        background: linear-gradient(135deg, rgba(39, 174, 96, 0.1), rgba(39, 174, 96, 0.2));
+        color: #27ae60;
+    }
+    
+    .feature-card.pharmacy .feature-icon {
+        background: linear-gradient(135deg, rgba(0, 137, 123, 0.1), rgba(0, 137, 123, 0.2));
+        color: #00897b;
+    }
+    
+    .feature-card.pharmacy .feature-btn {
+        background: #00897b;
+        color: white;
+    }
+    
+    .feature-card h5 {
+        font-weight: 700;
+        color: #202124;
+        margin-bottom: 15px;
+    }
+    
+    .feature-card p {
+        color: #5f6368;
+        margin-bottom: 20px;
+    }
+    
+    .feature-btn {
+        padding: 10px 24px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card.doctor .feature-btn {
+        background: #3498db;
+        color: white;
+    }
+    
+    .feature-card.patient .feature-btn {
+        background: #27ae60;
+        color: white;
+    }
+    
+    .feature-card.admin .feature-btn {
+        background: #9b59b6;
+        color: white;
+    }
+    
+    .feature-card:hover .feature-btn {
+        transform: scale(1.05);
+    }
+    
+    .features-list {
+        background: white;
+        border-radius: 20px;
+        padding: 50px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    }
+    
+    .features-list h3 {
+        font-weight: 700;
+        color: #202124;
+        margin-bottom: 30px;
+    }
+    
+    .features-list ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .features-list li {
+        padding: 15px 0;
+        border-bottom: 1px solid #e8eaed;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    
+    .features-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .features-list li:hover {
+        padding-left: 10px;
+    }
+    
+    .features-list li i {
+        color: #34a853;
+        margin-right: 15px;
+        font-size: 1.2rem;
+    }
+    
+    .welcome-card {
+        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        border: none;
+    }
+    
+    .welcome-card i {
+        font-size: 3rem;
+        color: #2e7d32;
+        margin-bottom: 20px;
+    }
+    
+    .welcome-card h4 {
+        color: #1b5e20;
+        font-weight: 700;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+        
+        .hero-btn {
+            margin: 10px 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto text-center">
+                <i class="fas fa-hospital hero-icon"></i>
+                <h1 class="hero-title">Hospital Healthcare Management System</h1>
+                <p class="hero-subtitle">
+                    A comprehensive solution for managing hospital operations, patient care, appointments, and medical records.
+                </p>
+                <div class="hero-buttons">
+                    <a href="{% url 'accounts:role_choice' %}" class="hero-btn hero-btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login
+                    </a>
+                    <a href="{% url 'pharmacy:login' %}" class="hero-btn hero-btn-outline me-3">
+                        <i class="fas fa-pills me-2"></i> Pharmacy Login
+                    </a>
+                    <a href="{% url 'accounts:patient_register' %}" class="hero-btn hero-btn-outline">
+                        <i class="fas fa-user-plus me-2"></i> Register as Patient
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Request Teleconsultation{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'dashboard:patient_dashboard' %}" class="btn btn-secondary mb-3">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+    <h2 style="color: var(--primary-color); font-weight: 700;">
+        <i class="fas fa-video"></i> Request Teleconsultation
+    </h2>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Select Doctor</label>
+                        <select name="doctor" class="form-select" required>
+                            <option value="">Choose a doctor...</option>
+                            {% for doctor in doctors %}
+                            <option value="{{ doctor.id }}">
+                                Dr. {{ doctor.user.get_full_name }} - {{ doctor.get_specialization_display }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.doctor.errors %}
+                        <div class="invalid-feedback d-block">{{ form.doctor.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Preferred Date</label>
+                        <input type="date" name="scheduled_date" class="form-control" required>
+                        <script>
+                            const today = new Date().toISOString().split('T')[0];
+                            document.querySelector('input[name="scheduled_date"]').setAttribute('min', today);
+                        </script>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Preferred Time</label>
+                        <select name="scheduled_time" class="form-select" required>
+                            <option value="">Select time...</option>
+                            <option value="09:00">09:00 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="14:00">02:00 PM</option>
+                            <option value="15:00">03:00 PM</option>
+                            <option value="16:00">04:00 PM</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Consultation</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Describe your symptoms or reason for consultation..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> How It Works
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">Select your preferred doctor</li>
+                    <li class="mb-2">Choose a convenient date and time</li>
+                    <li class="mb-2">Submit your request</li>
+                    <li class="mb-2">Receive meeting link via email/SMS</li>
+                    <li class="mb-0">Join video call at scheduled time</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="fas fa-video"></i> Video Call Requirements
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Stable internet connection</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Webcam & microphone</li>
+                    <li class="mb-0"><i class="fas fa-check text-success me-2"></i>Private, quiet space</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

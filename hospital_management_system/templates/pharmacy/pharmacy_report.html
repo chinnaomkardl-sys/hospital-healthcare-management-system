@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Pharmacy Reports{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'pharmacy:dashboard' %}">Pharmacy</a></li>
+        <li class="breadcrumb-item active">Reports</li>
+    </ol>
+</nav>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-chart-bar"></i> Pharmacy Reports
+        </h2>
+    </div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card primary">
+            <div class="kpi-number">{{ total_medicines }}</div>
+            <div class="kpi-label">Total Medicines</div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card warning">
+            <div class="kpi-number">{{ low_stock_count }}</div>
+            <div class="kpi-label">Low Stock</div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card success">
+            <div class="kpi-number">{{ stock_in }}</div>
+            <div class="kpi-label">Stock In ({{ days }} days)</div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card danger">
+            <div class="kpi-number">{{ stock_out }}</div>
+            <div class="kpi-label">Stock Out ({{ days }} days)</div>
+    </div>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-prescription"></i> Prescriptions & Requests
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Total Prescriptions:</th>
+                        <td>{{ prescriptions }}</td>
+                    </tr>
+                    <tr>
+                        <th>Total Requests:</th>
+                        <td>{{ requests }}</td>
+                    </tr>
+                </table>
+            </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-filter"></i> Filter by Date
+            </div>
+            <div class="card-body">
+                <form method="get" class="d-flex">
+                    <select name="days" class="form-select me-2">
+                        <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+                        <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+                        <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 days</option>
+                        <option value="365" {% if days == 365 %}selected{% endif %}>Last year</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </form>
+            </div>
+    </div>
+{% endblock %}

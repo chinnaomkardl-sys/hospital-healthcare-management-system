@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Create Medicine Request{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'pharmacy:dashboard' %}">Pharmacy</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'pharmacy:medicine_request_list' %}">Requests</a></li>
+        <li class="breadcrumb-item active">New Request</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-clipboard-list"></i> Create Medicine Request</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="text-end">
+                        <a href="{% url 'pharmacy:medicine_request_list' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Request</button>
+                    </div>
+                </form>
+            </div>
+    </div>
+{% endblock %}

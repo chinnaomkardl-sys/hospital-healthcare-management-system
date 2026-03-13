@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Reports - {{ patient.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Medical Reports</h2>
+            <p class="text-muted">Patient: {{ patient.user.get_full_name }} ({{ patient.patient_id }})</p>
+        </div>
+    </div>
+
+    {% if reports %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>Date</th>
+                    <th>Diagnosis</th>
+                    <th>Doctor</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ report.report_date|date:"d M Y" }}</td>
+                    <td><strong>{{ report.diagnosis }}</strong></td>
+                    <td>Dr. {{ report.doctor.user.get_full_name }}</td>
+                    <td>
+                        <a href="{% url 'reports:medical_report_detail' report.id %}" class="btn btn-sm btn-info">
+                            View Details
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <strong>No medical reports available.</strong>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

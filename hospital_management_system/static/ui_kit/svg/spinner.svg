@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="sgrad" x1="0" x2="1"><stop offset="0%" stop-color="#0d6efd"/><stop offset="100%" stop-color="#2b9ed8"/></linearGradient>
+  </defs>
+  <g transform="translate(64,64)">
+    <circle r="44" fill="none" stroke="#e9f5ff" stroke-width="12" opacity="0.25"/>
+    <path d="M44 0 A44 44 0 0 1 0 44" fill="none" stroke="url(#sgrad)" stroke-width="12" stroke-linecap="round">
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1s" repeatCount="indefinite"/>
+    </path>
+  </g>
+</svg>

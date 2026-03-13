@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}My Teleconsultations{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'dashboard:patient_dashboard' %}" class="btn btn-secondary mb-3">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+    <h2 style="color: var(--primary-color); font-weight: 700;">
+        <i class="fas fa-video"></i> My Teleconsultations
+    </h2>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <a href="{% url 'patients:request_teleconsultation' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Request New Teleconsultation
+        </a>
+    </div>
+</div>
+
+{% if teleconsultations %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Meeting Link</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tele in teleconsultations %}
+                            <tr>
+                                <td>{{ tele.consultation_id }}</td>
+                                <td>Dr. {{ tele.doctor.user.get_full_name }}</td>
+                                <td>{{ tele.scheduled_date|date:"d M Y" }}</td>
+                                <td>{{ tele.scheduled_time }}</td>
+                                <td>
+                                    {% if tele.status == 'SCHEDULED' %}
+                                    <span class="badge bg-primary">{{ tele.get_status_display }}</span>
+                                    {% elif tele.status == 'IN_PROGRESS' %}
+                                    <span class="badge bg-warning">{{ tele.get_status_display }}</span>
+                                    {% elif tele.status == 'COMPLETED' %}
+                                    <span class="badge bg-success">{{ tele.get_status_display }}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ tele.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if tele.meeting_link and tele.status == 'SCHEDULED' %}
+                                    <a href="{{ tele.meeting_link }}" target="_blank" class="btn btn-sm btn-success">
+                                        <i class="fas fa-video"></i> Join Call
+                                    </a>
+                                    {% elif tele.status == 'COMPLETED' %}
+                                    <span class="text-muted">Completed</span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <p class="mb-0">No teleconsultations found. <a href="{% url 'patients:request_teleconsultation' %}">Request one now</a></p>
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Pharmacy Dashboard{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'pharmacy:dashboard' %}">Pharmacy</a></li>
+        <li class="breadcrumb-item active">Dashboard</li>
+    </ol>
+</nav>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-pills"></i> Pharmacy Dashboard
+        </h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'pharmacy:medicine_list' %}" class="btn btn-primary">
+            <i class="fas fa-list"></i> View All Medicines
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card primary">
+            <div class="kpi-icon"><i class="fas fa-pills"></i></div>
+            <div class="kpi-number">{{ total_medicines }}</div>
+            <div class="kpi-label">Total Medicines</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card warning">
+            <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="kpi-number">{{ low_stock_medicines.count }}</div>
+            <div class="kpi-label">Low Stock</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card danger">
+            <div class="kpi-icon"><i class="fas fa-calendar-times"></i></div>
+            <div class="kpi-number">{{ expiring_soon.count }}</div>
+            <div class="kpi-label">Expiring Soon</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card success">
+            <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="kpi-number">${{ total_stock_value|floatformat:2 }}</div>
+            <div class="kpi-label">Stock Value</div>
+        </div>
+    </div>
+</div>
+
+<!-- Alerts Section -->
+<div class="row mb-4">
+    <!-- Low Stock Alert -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-white">
+                <i class="fas fa-exclamation-triangle"></i> Low Stock Alerts
+            </div>
+            <div class="card-body">
+                {% if low_stock_medicines %}
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Current Stock</th>
+                            <th>Min Level</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for med in low_stock_medicines %}
+                        <tr>
+                            <td>{{ med.name }}</td>
+                            <td><span class="badge bg-danger">{{ med.current_stock }}</span></td>
+                            <td>{{ med.minimum_stock_level }}</td>
+                            <td>
+                                <a href="{% url 'pharmacy:medicine_detail' med.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No low stock medicines</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expiring Soon Alert -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-calendar-times"></i> Expiring Soon (30 days)
+            </div>
+            <div class="card-body">
+                {% if expiring_soon %}
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Expiry Date</th>
+                            <th>Days Left</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for med in expiring_soon %}
+                        <tr>
+                            <td>{{ med.name }}</td>
+                            <td>{{ med.expiry_date }}</td>
+                            <td><span class="badge bg-danger">{{ med.days_until_expiry }} days</span></td>
+                            <td>
+                                <a href="{% url 'pharmacy:medicine_detail' med.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No medicines expiring soon</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Requests & Quick Actions -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-clipboard-list"></i> Pending Medicine Requests
+            </div>
+            <div class="card-body">
+                {% if pending_requests %}
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Type</th>
+                            <th>Urgency</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in pending_requests %}
+                        <tr>
+                            <td>{{ req.request_id }}</td>
+                            <td>{{ req.get_request_type_display }}</td>
+                            <td>
+                                <span class="badge {% if req.urgency == 'EMERGENCY' %}bg-danger{% elif req.urgency == 'URGENT' %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ req.get_urgency_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'pharmacy:medicine_request_detail' req.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No pending requests</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bolt"></i> Quick Actions
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'pharmacy:create_medicine' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Medicine
+                    </a>
+                    <a href="{% url 'pharmacy:create_prescription' %}" class="btn btn-success">
+                        <i class="fas fa-prescription"></i> Create Prescription
+                    </a>
+                    <a href="{% url 'pharmacy:create_purchase_order' %}" class="btn btn-warning">
+                        <i class="fas fa-shopping-cart"></i> Create Purchase Order
+                    </a>
+                    <a href="{% url 'pharmacy:pharmacy_report' %}" class="btn btn-info">
+                        <i class="fas fa-chart-bar"></i> View Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expired Medicines -->
+{% if expired_medicines %}
+<div class="row mt-2">
+    <div class="col-12">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-times-circle"></i> Expired Medicines - Immediate Action Required
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Expiry Date</th>
+                            <th>Current Stock</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for med in expired_medicines %}
+                        <tr>
+                            <td>{{ med.name }}</td>
+                            <td><span class="text-danger">{{ med.expiry_date }}</span></td>
+                            <td>{{ med.current_stock }}</td>
+                            <td>
+                                <a href="{% url 'pharmacy:medicine_detail' med.pk %}" class="btn btn-sm btn-danger">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

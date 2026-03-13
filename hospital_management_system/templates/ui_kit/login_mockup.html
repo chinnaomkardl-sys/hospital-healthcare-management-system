@@ -1,0 +1,55 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UI Kit — Login Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'ui_kit/css/ui_kit.css' %}">
+</head>
+<body class="ui-kit-preview animated-bg">
+  <div class="ui-container">
+    <div class="glass-card frosted-top">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="title">Welcome Back</div>
+          <div class="text-muted">Sign in to continue to Hospital</div>
+        </div>
+        <div>
+          <img src="{% static 'img/hero.svg' %}" width="64" alt="hero"/>
+        </div>
+      </div>
+      <div style="height:18px"></div>
+      <input class="glass-input" placeholder="Email"/>
+      <div style="height:12px"></div>
+      <input class="glass-input" placeholder="Password" type="password"/>
+      <div style="height:18px"></div>
+      <div class="d-flex gap-2">
+        <button class="btn-primary-neo btn-animated ripple">Sign In</button>
+        <button class="btn-ghost">Help</button>
+      </div>
+    </div>
+
+    <div style="height:18px"></div>
+    <div class="glass-card floating">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-bold">Quick Actions</div>
+          <div class="small text-muted">Create appointment · Register patient</div>
+        </div>
+        <div class="loader-center">
+          <img src="{% static 'ui_kit/svg/spinner.svg' %}" width="44" alt="spinner"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-bottom">
+      <div class="nav-item active"><i class="fas fa-home"></i></div>
+      <div class="nav-item"><i class="fas fa-calendar"></i></div>
+      <div class="nav-item"><i class="fas fa-user"></i></div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Reports{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'billing:billing_list' %}">Billing</a></li>
+        <li class="breadcrumb-item active">Financial Reports</li>
+    </ol>
+</nav>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-chart-line"></i> Financial Reports & Analytics
+        </h2>
+    </div>
+    <div class="col-md-4">
+        <form method="get" class="d-flex">
+            <select name="days" class="form-select me-2">
+                <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+                <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+                <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 days</option>
+                <option value="365" {% if days == 365 %}selected{% endif %}>Last year</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+</div>
+
+<!-- Revenue Overview -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card success">
+            <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="kpi-number">${{ total_revenue|floatformat:2 }}</div>
+            <div class="kpi-label">Total Revenue ({{ days }} days)</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card primary">
+            <div class="kpi-icon"><i class="fas fa-hand-holding-usd"></i></div>
+            <div class="kpi-number">${{ collected_amount|floatformat:2 }}</div>
+            <div class="kpi-label">Collected</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="kpi-card warning">
+            <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+            <div class="kpi-number">${{ pending_amount|floatformat:2 }}</div>
+            <div class="kpi-label">Pending</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+            <div class="kpi-card info">
+                <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
+                <div class="kpi-number">
+                    {% if total_revenue > 0 %}{% widthratio collected_amount total_revenue 100 as collection_rate %}{{ collection_rate|floatformat:1 }}%{% else %}0%{% endif %}
+                </div>
+                <div class="kpi-label">Collection Rate</div>
+            </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Billing Status -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-pie"></i> Billing Status Distribution
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for status in status_counts %}
+                        <tr>
+                            <td>
+                                <span class="badge {% if status.status == 'PAID' %}badge-success{% elif status.status == 'PENDING' %}badge-warning{% elif status.status == 'OVERDUE' %}badge-danger{% elif status.status == 'PARTIAL' %}badge-info{% else %}badge-secondary{% endif %}">
+                                    {{ status.status }}
+                                </span>
+                            </td>
+                            <td>{{ status.count }}</td>
+                            <td>
+                                {% widthratio status.count total_bills 100 %}%
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Insurance Claims -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-contract"></i> Insurance Claims Summary ({{ days }} days)
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Total Claims:</th>
+                        <td>${{ insurance_claims.total|default:"0" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Approved Amount:</th>
+                        <td>${{ insurance_claims.approved|default:"0" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Pending Claims:</th>
+                        <td>
+                            ${{ claim_diff }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Installment Plans -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar-check"></i> Installment Plans Overview
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-primary">{{ installment_stats.total_plans }}</h3>
+                            <p class="text-muted">Total Plans</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-warning">{{ installment_stats.active }}</h3>
+                            <p class="text-muted">Active</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-success">{{ installment_stats.completed }}</h3>
+                            <p class="text-muted">Completed</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-danger">{{ installment_stats.defaulted }}</h3>
+                            <p class="text-muted">Defaulted</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-link"></i> Quick Actions
+            </div>
+            <div class="card-body">
+                <a href="{% url 'billing:billing_list' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-file-invoice"></i> All Bills
+                </a>
+                <a href="{% url 'billing:insurance_claim_list' %}" class="btn btn-info me-2">
+                    <i class="fas fa-file-contract"></i> Insurance Claims
+                </a>
+                <a href="{% url 'billing:installment_plan_list' %}" class="btn btn-warning me-2">
+                    <i class="fas fa-calendar-check"></i> Installment Plans
+                </a>
+                <a href="{% url 'billing:create_billing' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Create New Bill
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

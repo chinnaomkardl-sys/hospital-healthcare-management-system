@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'dashboard:patient_dashboard' %}" class="btn btn-secondary mb-3">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+    <h2 style="color: var(--primary-color); font-weight: 700;">
+        <i class="fas fa-calendar-plus"></i> Book Appointment
+    </h2>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Select Doctor</label>
+                        <select name="doctor" class="form-select" id="id_doctor" required>
+                            <option value="">Choose a doctor...</option>
+                            {% for doctor in available_doctors %}
+                            <option value="{{ doctor.id }}">
+                                Dr. {{ doctor.user.get_full_name }} - {{ doctor.get_specialization_display }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.doctor.errors %}
+                        <div class="invalid-feedback d-block">{{ form.doctor.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Appointment Date</label>
+                        <input type="date" name="appointment_date" class="form-control" id="id_appointment_date" required>
+                        {% if form.appointment_date.errors %}
+                        <div class="invalid-feedback d-block">{{ form.appointment_date.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Appointment Time</label>
+                        <select name="appointment_time" class="form-select" id="id_appointment_time" required>
+                            <option value="">Select time...</option>
+                            <option value="09:00">09:00 AM</option>
+                            <option value="09:30">09:30 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="10:30">10:30 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="11:30">11:30 AM</option>
+                            <option value="14:00">02:00 PM</option>
+                            <option value="14:30">02:30 PM</option>
+                            <option value="15:00">03:00 PM</option>
+                            <option value="15:30">03:30 PM</option>
+                            <option value="16:00">04:00 PM</option>
+                            <option value="16:30">04:30 PM</option>
+                        </select>
+                        {% if form.appointment_time.errors %}
+                        <div class="invalid-feedback d-block">{{ form.appointment_time.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Visit</label>
+                        <textarea name="reason" class="form-control" rows="3" placeholder="Describe your symptoms or reason for visit" required></textarea>
+                        {% if form.reason.errors %}
+                        <div class="invalid-feedback d-block">{{ form.reason.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Consultation Fee</label>
+                        <div class="form-control-plaintext">
+                            <span id="consultation_fee">Select a doctor to see fee</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-calendar-check"></i> Book Appointment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> Important Information
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Select an available doctor</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Choose a convenient date</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Select an available time slot</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Arrive 15 minutes early</li>
+                    <li class="mb-0"><i class="fas fa-check text-success me-2"></i> Bring previous medical records</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="fas fa-user-md"></i> Available Doctors Today
+            </div>
+            <div class="card-body">
+                {% if available_doctors_today %}
+                <div class="list-group list-group-flush">
+                    {% for doctor in available_doctors_today %}
+                    <div class="list-group-item px-0">
+                        <h6 class="mb-1">Dr. {{ doctor.user.get_full_name }}</h6>
+                        <small class="text-muted">{{ doctor.get_specialization_display }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No doctors available today</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('id_appointment_date').setAttribute('min', today);
+
+    // Store doctor fees for JavaScript
+    const doctorFees = {
+        {% for doctor in available_doctors %}
+        "{{ doctor.id }}": "{{ doctor.consultation_fee }}",
+        {% endfor %}
+    };
+
+    // Update consultation fee when doctor is selected
+    document.getElementById('id_doctor').addEventListener('change', function() {
+        const feeSpan = document.getElementById('consultation_fee');
+        const doctorId = this.value;
+        if (doctorId && doctorFees[doctorId]) {
+            feeSpan.textContent = '$' + doctorFees[doctorId];
+        } else {
+            feeSpan.textContent = 'Select a doctor to see fee';
+        }
+    });
+</script>
+{% endblock %}
+

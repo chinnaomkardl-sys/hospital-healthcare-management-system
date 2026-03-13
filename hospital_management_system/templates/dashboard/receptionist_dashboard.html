@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Reception Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-list"></i> Reception Dashboard
+        </h2>
+        <p class="text-muted">Welcome to Reception Department</p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-calendar"></i></div>
+            <div class="number">{{ todays_appointments|length }}</div>
+            <div class="label">Today's Appointments</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <div class="number">{{ recent_patients|length }}</div>
+            <div class="label">Recent Patients</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-user-md"></i></div>
+            <div class="number">{{ available_doctors|length }}</div>
+            <div class="label">Available Doctors</div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Appointments -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar-day"></i> Today's Appointments
+            </div>
+            <div class="card-body">
+                {% if todays_appointments %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for apt in todays_appointments %}
+                                <tr>
+                                    <td>{{ apt.appointment_time }}</td>
+                                    <td>{{ apt.patient.user.get_full_name }}</td>
+                                    <td>Dr. {{ apt.doctor.user.first_name }}</td>
+                                    <td>{{ apt.reason }}</td>
+                                    <td>
+                                        <span class="badge {% if apt.status == 'SCHEDULED' %}badge-info{% elif apt.status == 'COMPLETED' %}badge-success{% else %}badge-danger{% endif %}">
+                                            {{ apt.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No appointments scheduled for today</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bolt"></i> Quick Actions
+            </div>
+            <div class="card-body">
+                <a href="{% url 'reception:register_patient' %}" class="btn btn-success me-2">
+                    <i class="fas fa-user-plus"></i> Register New Patient
+                </a>
+                <a href="{% url 'reception:book_appointment' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-calendar-plus"></i> Book Appointment
+                </a>
+                <a href="{% url 'reception:appointment_list' %}" class="btn btn-info me-2">
+                    <i class="fas fa-calendar"></i> View All Appointments
+                </a>
+                <a href="{% url 'reception:search_patient' %}" class="btn btn-warning me-2">
+                    <i class="fas fa-search"></i> Search Patient
+                </a>
+                <a href="{% url 'billing:billing_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-file-invoice-dollar"></i> Billing
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

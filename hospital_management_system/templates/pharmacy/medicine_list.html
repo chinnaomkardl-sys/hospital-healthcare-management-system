@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Medicine Inventory{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'pharmacy:dashboard' %}">Pharmacy</a></li>
+        <li class="breadcrumb-item active">Medicine Inventory</li>
+    </ol>
+</nav>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-pills"></i> Medicine Inventory
+        </h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'pharmacy:create_medicine' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Medicine
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="kpi-card primary">
+            <div class="kpi-number">{{ total_medicines }}</div>
+            <div class="kpi-label">Total Medicines</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card warning">
+            <div class="kpi-number">{{ low_stock_count }}</div>
+            <div class="kpi-label">Low Stock</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card danger">
+            <div class="kpi-number">{{ out_of_stock_count }}</div>
+            <div class="kpi-label">Out of Stock</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card info">
+            <div class="kpi-number">{{ expiring_soon_count }}</div>
+            <div class="kpi-label">Expiring Soon</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search medicines..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.pk }}" {% if category_filter == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="ACTIVE" {% if status_filter == 'ACTIVE' %}selected{% endif %}>Active</option>
+                    <option value="INACTIVE" {% if status_filter == 'INACTIVE' %}selected{% endif %}>Inactive</option>
+                    <option value="DISCONTINUED" {% if status_filter == 'DISCONTINUED' %}selected{% endif %}>Discontinued</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" name="low_stock" id="lowStock" {% if request.GET.low_stock %}checked{% endif %}>
+                    <label class="form-check-label" for="lowStock">Low Stock Only</label>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Medicine List -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Medicine Name</th>
+                        <th>Category</th>
+                        <th>Stock</th>
+                        <th>Price</th>
+                        <th>Expiry</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for medicine in medicines %}
+                    <tr class="{% if medicine.is_low_stock %}table-warning{% endif %}">
+                        <td>{{ medicine.medicine_code }}</td>
+                        <td>
+                            <strong>{{ medicine.name }}</strong>
+                            {% if medicine.strength %}<br><small class="text-muted">{{ medicine.strength }}</small>{% endif %}
+                        </td>
+                        <td>{{ medicine.category.name|default:"-" }}</td>
+                        <td>
+                            {% if medicine.current_stock == 0 %}
+                            <span class="badge bg-danger">Out of Stock</span>
+                            {% elif medicine.is_low_stock %}
+                            <span class="badge bg-warning">{{ medicine.current_stock }}</span>
+                            {% else %}
+                            <span class="badge bg-success">{{ medicine.current_stock }}</span>
+                            {% endif %}
+                        </td>
+                        <td>${{ medicine.selling_price }}</td>
+                        <td>
+                            {% if medicine.expiry_date %}
+                                {% if medicine.is_expired %}
+                                <span class="text-danger">Expired</span>
+                                {% elif medicine.is_expiring_soon %}
+                                <span class="text-warning">{{ medicine.expiry_date }}</span>
+                                {% else %}
+                                {{ medicine.expiry_date }}
+                                {% endif %}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if medicine.status == 'ACTIVE' %}success{% elif medicine.status == 'INACTIVE' %}secondary{% else %}danger{% endif %}">
+                                {{ medicine.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'pharmacy:medicine_detail' medicine.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'pharmacy:update_medicine' medicine.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No medicines found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+

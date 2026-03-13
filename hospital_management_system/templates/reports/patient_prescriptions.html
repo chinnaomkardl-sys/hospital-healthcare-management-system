@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Prescriptions - {{ patient.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Prescriptions</h2>
+            <p class="text-muted">Patient: {{ patient.user.get_full_name }} ({{ patient.patient_id }})</p>
+        </div>
+    </div>
+
+    {% if prescriptions %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>Medicine</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                    <th>Duration</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prescription in prescriptions %}
+                <tr>
+                    <td><strong>{{ prescription.medicine_name }}</strong></td>
+                    <td>{{ prescription.dosage }}</td>
+                    <td>{{ prescription.frequency }}</td>
+                    <td>{{ prescription.duration }}</td>
+                    <td>Dr. {{ prescription.doctor.user.get_full_name }}</td>
+                    <td>{{ prescription.prescribed_at|date:"d M Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <strong>No prescriptions available.</strong>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Insurance Claims{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'billing:billing_list' %}">Billing</a></li>
+        <li class="breadcrumb-item active">Insurance Claims</li>
+    </ol>
+</nav>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-file-contract"></i> Insurance Claims
+        </h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'billing:create_insurance_claim' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Claim
+        </a>
+        <a href="{% url 'billing:insurance_provider_list' %}" class="btn btn-info">
+            <i class="fas fa-building"></i> Providers
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search claims..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    {% for status in statuses %}
+                    <option value="{{ status.0 }}" {% if status_filter == status.0 %}selected{% endif %}>{{ status.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Claims Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Claim ID</th>
+                        <th>Patient</th>
+                        <th>Provider</th>
+                        <th>Policy Number</th>
+                        <th>Claim Amount</th>
+                        <th>Approved</th>
+                        <th>Status</th>
+                        <th>Submitted Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in claims %}
+                    <tr>
+                        <td><strong>{{ claim.claim_id }}</strong></td>
+                        <td>{{ claim.patient.user.get_full_name }}</td>
+                        <td>{{ claim.insurance_provider.name }}</td>
+                        <td>{{ claim.policy_number }}</td>
+                        <td>${{ claim.claim_amount }}</td>
+                        <td>{% if claim.approved_amount %}${{ claim.approved_amount }}{% else %}-{% endif %}</td>
+                        <td>
+                            <span class="badge {% if claim.status == 'APPROVED' %}badge-success{% elif claim.status == 'REJECTED' %}badge-danger{% elif claim.status == 'UNDER_REVIEW' %}badge-warning{% else %}badge-info{% endif %}">
+                                {{ claim.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ claim.submitted_date|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'billing:insurance_claim_detail' claim.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">No insurance claims found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

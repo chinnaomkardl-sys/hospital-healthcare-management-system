@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'doctors:doctor_list' %}" class="btn btn-secondary mb-3">
+        <i class="fas fa-arrow-left"></i> Back to Doctors
+    </a>
+    <h2 style="color: var(--primary-color); font-weight: 700;">
+        <i class="fas fa-user-md"></i> Dr. {{ doctor.user.get_full_name }}
+    </h2>
+</div>
+
+<div class="row">
+    <!-- Doctor Info -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="avatar-circle mb-3">
+                    <i class="fas fa-user-md fa-4x"></i>
+                </div>
+                <h4>{{ doctor.user.get_full_name }}</h4>
+                <p class="text-muted">{{ doctor.get_specialization_display }}</p>
+                <span class="badge {% if doctor.is_available %}badge-success{% else %}badge-danger{% endif %}">
+                    {% if doctor.is_available %}Available{% else %}Unavailable{% endif %}
+                </span>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong><i class="fas fa-id-card me-2"></i>License:</strong> {{ doctor.license_number }}
+                </li>
+                <li class="list-group-item">
+                    <strong><i class="fas fa-layer-group me-2"></i>Department:</strong> {{ doctor.department.name|default:"N/A" }}
+                </li>
+                <li class="list-group-item">
+                    <strong><i class="fas fa-briefcase me-2"></i>Experience:</strong> {{ doctor.experience_years }} years
+                </li>
+                <li class="list-group-item">
+                    <strong><i class="fas fa-dollar-sign me-2"></i>Consultation Fee:</strong> ${{ doctor.consultation_fee }}
+                </li>
+                <li class="list-group-item">
+                    <strong><i class="fas fa-envelope me-2"></i>Email:</strong> {{ doctor.user.email }}
+                </li>
+                <li class="list-group-item">
+                    <strong><i class="fas fa-phone me-2"></i>Phone:</strong> {{ doctor.user.phone|default:"N/A" }}
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Stats & Patients -->
+    <div class="col-lg-8">
+        <!-- Stats -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-users"></i></div>
+                    <div class="number">{{ total_patients }}</div>
+                    <div class="label">Assigned Patients</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="number">{{ completed_appointments }}</div>
+                    <div class="label">Completed Appointments</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Appointments -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-calendar-check"></i> Recent Appointments
+            </div>
+            <div class="card-body">
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in appointments %}
+                            <tr>
+                                <td>{{ apt.patient.user.get_full_name }}</td>
+                                <td>{{ apt.appointment_date|date:"d M Y" }}</td>
+                                <td>{{ apt.appointment_time }}</td>
+                                <td>
+                                    <span class="badge badge-{% if apt.status == 'COMPLETED' %}success{% elif apt.status == 'PENDING' %}warning{% else %}info{% endif %}">
+                                        {{ apt.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No appointments yet</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Assigned Patients -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-injured"></i> Assigned Patients
+            </div>
+            <div class="card-body">
+                {% if patients %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Gender</th>
+                                <th>Blood Group</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for patient in patients %}
+                            <tr>
+                                <td>{{ patient.patient_id }}</td>
+                                <td>{{ patient.user.get_full_name }}</td>
+                                <td>{{ patient.get_gender_display }}</td>
+                                <td>{{ patient.blood_group }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No patients assigned</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

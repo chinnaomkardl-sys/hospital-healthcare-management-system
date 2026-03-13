@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Installment Plans{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'billing:billing_list' %}">Billing</a></li>
+        <li class="breadcrumb-item active">Installment Plans</li>
+    </ol>
+</nav>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-calendar-check"></i> Installment Plans
+        </h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'billing:create_installment_plan' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Plan
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search plans..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    {% for status in statuses %}
+                    <option value="{{ status.0 }}" {% if status_filter == status.0 %}selected{% endif %}>{{ status.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Plans Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Plan ID</th>
+                        <th>Patient</th>
+                        <th>Billing</th>
+                        <th>Total Amount</th>
+                        <th>Amount Paid</th>
+                        <th>Installments</th>
+                        <th>Next Due</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                    <tr>
+                        <td><strong>{{ plan.plan_id }}</strong></td>
+                        <td>{{ plan.patient.user.get_full_name }}</td>
+                        <td><a href="{% url 'billing:billing_detail' plan.billing.pk %}">{{ plan.billing.billing_id }}</a></td>
+                        <td>${{ plan.total_amount }}</td>
+                        <td>${{ plan.amount_paid }}</td>
+                        <td>{{ plan.installments_paid }}/{{ plan.number_of_installments }}</td>
+                        <td>{{ plan.next_due_date|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="badge {% if plan.status == 'COMPLETED' %}badge-success{% elif plan.status == 'DEFAULTED' %}badge-danger{% elif plan.status == 'ACTIVE' %}badge-warning{% else %}badge-secondary{% endif %}">
+                                {{ plan.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'billing:installment_plan_detail' plan.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">No installment plans found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}My Appointments{% endblock %}
+
+{% block extra_css %}
+<style>
+    .appointment-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid #1a73e8;
+    }
+    
+    .appointment-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 25px rgba(0,0,0,0.12);
+    }
+    
+    .appointment-card.completed {
+        border-left-color: #34a853;
+    }
+    
+    .appointment-card.cancelled {
+        border-left-color: #ea4335;
+    }
+    
+    .appointment-card.scheduled {
+        border-left-color: #1a73e8;
+    }
+    
+    .patient-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1a73e8, #00897b);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+    
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+    
+    .status-badge.scheduled {
+        background: rgba(26, 115, 232, 0.1);
+        color: #1a73e8;
+    }
+    
+    .status-badge.completed {
+        background: rgba(52, 168, 83, 0.1);
+        color: #34a853;
+    }
+    
+    .status-badge.cancelled {
+        background: rgba(234, 67, 53, 0.1);
+        color: #ea4335;
+    }
+    
+    .status-badge.no_show {
+        background: rgba(251, 188, 4, 0.1);
+        color: #fbbc04;
+    }
+    
+    .action-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 style="color: var(--primary-color); font-weight: 700;">
+                <i class="fas fa-calendar-check me-2"></i>My Appointments
+            </h2>
+            <p class="text-muted">View and manage your patient appointments</p>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        {% for value, label in statuses %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-2"></i>Filter
+                    </button>
+                    <a href="{% url 'doctors:view_appointments' %}" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-redo"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if appointments %}
+    <div class="row">
+        {% for appointment in appointments %}
+        <div class="col-12">
+            <div class="appointment-card {{ appointment.status|lower }}">
+                <div class="row align-items-center">
+                    <div class="col-md-1">
+                        <div class="patient-avatar">
+                            {{ appointment.patient.user.first_name.0|upper }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="mb-0">{{ appointment.patient.user.get_full_name }}</h6>
+                        <small class="text-muted">ID: {{ appointment.patient.patient_id }}</small>
+                    </div>
+                    <div class="col-md-2">
+                        <div>
+                            <i class="fas fa-calendar me-1 text-muted"></i>
+                            {{ appointment.appointment_date|date:"d M Y" }}
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>{{ appointment.appointment_time }}
+                        </small>
+                    </div>
+                    <div class="col-md-2">
+                        <small class="text-muted">Reason:</small>
+                        <div>{{ appointment.reason|truncatewords:3 }}</div>
+                    </div>
+                    <div class="col-md-2">
+                        <span class="status-badge {{ appointment.status|lower }}">
+                            {{ appointment.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <a href="{% url 'patients:patient_detail' appointment.patient.patient_id %}" class="btn btn-sm btn-primary action-btn">
+                            <i class="fas fa-user-eye me-1"></i> View Patient
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+            {% endif %}
+            <li class="page-item active">
+                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-calendar-times" style="font-size: 4rem; color: #ccc;"></i>
+            <h4 class="mt-3 text-muted">No appointments found</h4>
+            <p class="text-muted">There are no appointments matching your criteria.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

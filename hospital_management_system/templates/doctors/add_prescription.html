@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Add Prescription - {{ patient.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:doctor_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'doctors:view_appointments' %}">My Appointments</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'patients:patient_detail' patient.patient_id %}">{{ patient.user.get_full_name }}</a></li>
+        <li class="breadcrumb-item active">Add Prescription</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-prescription"></i> Add Prescription for {{ patient.user.get_full_name }}
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Patient ID: <strong>{{ patient.patient_id }}</strong></p>
+                {% if patient.allergies %}
+                <div class="alert alert-warning">
+                    <strong>Allergies:</strong> {{ patient.allergies }}
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if is_pharmacy %}
+                        {% if formset.errors %}
+                        <div class="alert alert-danger">
+                            <ul>
+                                {% for form in formset %}
+                                    {% for field in form %}
+                                        {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <h5><i class="fas fa-pills"></i> Pharmacy Tablets Prescription</h5>
+                        <p class="text-muted">Select tablets from pharmacy inventory</p>
+                        
+                        {{ formset.management_form }}
+                        
+                        {% for form in formset %}
+                        <div class="card mb-3 item-form {% if form.instance.pk %}existing{% endif %}">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label>Medicine (Tablet) *</label>
+                                        {{ form.medicine }}
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>Dosage *</label>
+                                        {{ form.dosage }}
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>Frequency *</label>
+                                        {{ form.frequency }}
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>Quantity *</label>
+                                        {{ form.prescribed_quantity }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Duration / Instructions</label>
+                                        {{ form.duration }} {{ form.instructions }}
+                                    </div>
+                                </div>
+                                {{ form.DELETE }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="form-group mb-3">
+                            <label>Additional Notes</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Diagnosis, special instructions..."></textarea>
+                        </div>
+                    {% else %}
+                        {# Original simple form fallback #}
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul>
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="form-group mb-3">
+                            <label>{{ form.medicine_name.label }} *</label>
+                            {{ form.medicine_name }}
+                            <small class="form-text text-muted">Name of the medicine</small>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label>{{ form.dosage.label }} *</label>
+                                {{ form.dosage }}
+                                <small class="form-text text-muted">e.g., 500mg</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label>{{ form.frequency.label }} *</label>
+                                {{ form.frequency }}
+                                <small class="form-text text-muted">e.g., 3 times a day</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label>{{ form.duration.label }} *</label>
+                                {{ form.duration }}
+                                <small class="form-text text-muted">e.g., 10 days</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label>{{ form.instructions.label }}</label>
+                            {{ form.instructions }}
+                            <small class="form-text text-muted">Special instructions</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label>{{ form.notes.label }}</label>
+                            {{ form.notes }}
+                            <small class="form-text text-muted">Additional notes</small>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'patients:patient_detail' patient.patient_id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {% if is_pharmacy %}Prescribe Tablets{% else %}Add Prescription{% endif %}
+                        </button>
+                    </div>
+                </form>
+
+                {% if is_pharmacy %}
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const selects = document.querySelectorAll('.medicine-select[data-pharmacy-search]');
+                    selects.forEach(select => {
+                        select.addEventListener('focus', function() {
+                            if (!this.dataset.loaded) {
+                                // Load options via AJAX if needed
+                                fetch('{% url "pharmacy:medicine_search" %}?q=' + encodeURIComponent(this.value))
+                                .then(response => response.json())
+                                .then(data => {
+                                    // Update select options
+                                    this.innerHTML = '<option value="">Search tablets...</option>';
+                                    data.results.forEach(item => {
+                                        const option = new Option(item.name + ' (' + item.strength + ') - Stock: ' + item.stock, item.id);
+                                        this.add(option);
+                                    });
+                                });
+                                this.dataset.loaded = true;
+                            }
+                        });
+                    });
+                });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

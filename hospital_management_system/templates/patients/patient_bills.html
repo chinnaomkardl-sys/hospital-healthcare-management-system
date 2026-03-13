@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}My Bills{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'dashboard:patient_dashboard' %}" class="btn btn-secondary mb-3">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+    <h2 style="color: var(--primary-color); font-weight: 700;">
+        <i class="fas fa-file-invoice-dollar"></i> My Bills
+    </h2>
+</div>
+
+{% if pending_bills %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <h5><i class="fas fa-exclamation-triangle me-2"></i>Pending Payments</h5>
+            <p class="mb-0">You have {{ pending_bills|length }} pending bill(s). Please make payment to avoid delays.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Pending Bills -->
+{% if pending_bills %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Pending Bills</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Bill ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Balance</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in pending_bills %}
+                            <tr>
+                                <td>{{ bill.billing_id }}</td>
+                                <td>{{ bill.created_at|date:"d M Y" }}</td>
+                                <td>${{ bill.total_amount }}</td>
+                                <td><strong>${{ bill.get_balance }}</strong></td>
+                                <td>
+                                    <a href="{% url 'patients:make_payment' bill.billing_id %}" class="btn btn-sm btn-success">
+                                        <i class="fas fa-credit-card"></i> Pay Now
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- All Bills -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>All Bills</h5>
+            </div>
+            <div class="card-body">
+                {% if bills %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Bill ID</th>
+                                <th>Date</th>
+                                <th>Total Amount</th>
+                                <th>Paid</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in bills %}
+                            <tr>
+                                <td>{{ bill.billing_id }}</td>
+                                <td>{{ bill.created_at|date:"d M Y" }}</td>
+                                <td>${{ bill.total_amount }}</td>
+                                <td>${{ bill.amount_paid }}</td>
+                                <td><strong>${{ bill.get_balance }}</strong></td>
+                                <td>
+                                    {% if bill.status == 'PAID' %}
+                                    <span class="badge bg-success">{{ bill.get_status_display }}</span>
+                                    {% elif bill.status == 'PARTIAL' %}
+                                    <span class="badge bg-warning">{{ bill.get_status_display }}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ bill.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if bill.get_balance > 0 %}
+                                    <a href="{% url 'patients:make_payment' bill.billing_id %}" class="btn btn-sm btn-outline-primary">
+                                        Pay
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No bills found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 style="color: var(--primary-color); font-weight: 700;">
+            <i class="fas fa-home"></i> My Health Portal
+        </h2>
+        <p class="text-muted">Welcome, {{ user.get_full_name }}</p>
+    </div>
+</div>
+
+<!-- Quick Action Buttons -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'patients:book_appointment' %}" class="btn btn-success">
+                <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+            </a>
+            <a href="{% url 'patients:prescription_refill' %}" class="btn btn-info">
+                <i class="fas fa-pills me-2"></i>Prescription Refill
+            </a>
+            <a href="{% url 'patients:patient_bills' %}" class="btn btn-warning">
+                <i class="fas fa-file-invoice-dollar me-2"></i>View Bills
+            </a>
+            <a href="{% url 'patients:request_teleconsultation' %}" class="btn btn-primary">
+                <i class="fas fa-video me-2"></i>Teleconsultation
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-calendar"></i></div>
+            <div class="number">{{ upcoming_appointments|length }}</div>
+            <div class="label">Upcoming Appointments</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-pills"></i></div>
+            <div class="number">{{ recent_prescriptions|length }}</div>
+            <div class="label">Active Prescriptions</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-file-medical"></i></div>
+            <div class="number">{{ recent_reports|length }}</div>
+            <div class="label">Medical Reports</div>
+        </div>
+    </div>
+</div>
+
+<!-- Appointments -->
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar-check"></i> Upcoming Appointments
+            </div>
+            <div class="card-body">
+                {% if upcoming_appointments %}
+                    <div class="list-group">
+                        {% for apt in upcoming_appointments %}
+                        <div class="list-group-item">
+                            <h6 class="mb-1"><strong>Dr. {{ apt.doctor.user.get_full_name }}</strong></h6>
+                            <small>{{ apt.appointment_date|date:"d M Y" }} at {{ apt.appointment_time }}</small><br>
+                            <small class="text-muted">{{ apt.reason }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No upcoming appointments</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Prescriptions -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-pills"></i> Recent Prescriptions
+            </div>
+            <div class="card-body">
+                {% if recent_prescriptions %}
+                    <div class="list-group">
+                        {% for prescription in recent_prescriptions %}
+                        <div class="list-group-item">
+                            <h6 class="mb-1"><strong>{{ prescription.medicine_name }}</strong></h6>
+                            <small>{{ prescription.dosage }} - {{ prescription.frequency }}</small><br>
+                            <small class="text-muted">Duration: {{ prescription.duration }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No prescriptions available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medical Reports and Vitals -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-medical"></i> Medical Reports
+            </div>
+            <div class="card-body">
+                {% if recent_reports %}
+                    <div class="list-group">
+                        {% for report in recent_reports %}
+                        <div class="list-group-item">
+                            <h6 class="mb-1">{{ report.report_date|date:"d M Y" }}</h6>
+                            <small class="text-muted">Dr. {{ report.doctor.user.get_full_name }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'reports:patient_reports' user.patient_profile.patient_id %}" class="btn btn-sm btn-primary mt-3">
+                        View All Reports
+                    </a>
+                {% else %}
+                    <p class="text-muted">No medical reports available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-heartbeat"></i> Recent Vitals
+            </div>
+            <div class="card-body">
+                {% if recent_vitals %}
+                    {% with latest_vital=recent_vitals.0 %}
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <small class="text-muted">Blood Pressure</small>
+                            <h6>{{ latest_vital.blood_pressure }}</h6>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <small class="text-muted">Pulse Rate</small>
+                            <h6>{{ latest_vital.pulse_rate }} BPM</h6>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <small class="text-muted">Temperature</small>
+                            <h6>{{ latest_vital.temperature }}°F</h6>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <small class="text-muted">Oxygen Level</small>
+                            <h6>{{ latest_vital.oxygen_level }}%</h6>
+                        </div>
+                    </div>
+                    {% endwith %}
+                {% else %}
+                    <p class="text-muted">No vitals recorded yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

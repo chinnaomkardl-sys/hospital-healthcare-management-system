@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Update Appointment{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:800px;">
+  <div class="card">
+    <div class="card-body">
+      <h2 class="mb-3">Update Appointment</h2>
+
+      <p><strong>Appointment:</strong> {{ appointment.appointment_id }}</p>
+      <p><strong>Patient:</strong> {{ appointment.patient.user.get_full_name }}</p>
+      <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.user.get_full_name }}</p>
+      <p><strong>Date:</strong> {{ appointment.appointment_date }} <strong>Time:</strong> {{ appointment.appointment_time }}</p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="mb-3">
+          {{ form.status.label_tag }}
+          {{ form.status }}
+          {% if form.status.errors %}<div class="invalid-feedback d-block">{% for e in form.status.errors %}{{ e }}{% endfor %}</div>{% endif %}
+        </div>
+        <div class="mb-3">
+          {{ form.notes.label_tag }}
+          {{ form.notes }}
+          {% if form.notes.errors %}<div class="invalid-feedback d-block">{% for e in form.notes.errors %}{{ e }}{% endfor %}</div>{% endif %}
+        </div>
+        <button class="btn btn-primary" type="submit">Update</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

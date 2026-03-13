@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Gateway - {{ billing.billing_id }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'billing:billing_list' %}">Billing</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'billing:billing_detail' billing.pk %}">{{ billing.billing_id }}</a></li>
+        <li class="breadcrumb-item active">Payment Gateway</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-credit-card"></i> Make Payment
+            </div>
+            <div class="card-body">
+                <h4>Bill: {{ billing.billing_id }}</h4>
+                <p>Patient: {{ billing.patient.user.get_full_name }}</p>
+                <h3 class="text-primary">Balance Due: ${{ billing.get_balance }}</h3>
+                
+                <hr>
+                
+                <h5>Select Payment Method:</h5>
+                
+                <form method="post" action="{% url 'billing:payment_callback' billing.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="amount" value="{{ billing.get_balance }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Gateway</label>
+                        <select name="payment_method" class="form-select" id="paymentGateway">
+                            <option value="">Select Gateway</option>
+                            {% if stripe_available %}
+                            <option value="STRIPE">Stripe</option>
+                            {% endif %}
+                            {% if razorpay_available %}
+                            <option value="RAZORPAY">Razorpay</option>
+                            {% endif %}
+                            <option value="CARD">Credit/Debit Card (Manual)</option>
+                            <option value="UPI">UPI</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Transaction ID</label>
+                        <input type="text" name="transaction_id" class="form-control" placeholder="Enter transaction ID">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <input type="number" name="amount" class="form-control" step="0.01" value="{{ billing.get_balance }}">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-lock"></i> Pay Now
+                    </button>
+                    <a href="{% url 'billing:billing_detail' billing.pk %}" class="btn btn-secondary btn-lg">
+                        Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+        
+        {% if not stripe_available and not razorpay_available %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            Payment gateway integrations (Stripe, Razorpay) are not configured. 
+            Please install the required packages and configure API keys in settings.
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> Payment Information
+            </div>
+            <div class="card-body">
+                <p><strong>Total Amount:</strong> ${{ billing.total_amount }}</p>
+                <p><strong>Amount Paid:</strong> ${{ billing.amount_paid }}</p>
+                <p><strong>Balance:</strong> ${{ billing.get_balance }}</p>
+                <hr>
+                <p class="text-muted small">
+                    Secure payment processing powered by Stripe and Razorpay.
+                    Your payment information is encrypted and secure.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

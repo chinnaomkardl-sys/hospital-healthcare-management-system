@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Report Details{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Medical Report Details</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'patients:patient_detail' report.patient.patient_id %}" class="btn btn-secondary">
+                Back to Patient
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h5 class="text-muted">Patient</h5>
+                    <p><strong>{{ report.patient.user.get_full_name }}</strong></p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-muted">Doctor</h5>
+                    <p><strong>Dr. {{ report.doctor.user.get_full_name }}</strong></p>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h5 class="text-muted">Date</h5>
+                    <p>{{ report.report_date|date:"d M Y" }}</p>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="mb-3">
+                <h5 class="text-muted">Diagnosis</h5>
+                <p>{{ report.diagnosis }}</p>
+            </div>
+
+            <div class="mb-3">
+                <h5 class="text-muted">Treatment Plan</h5>
+                <p>{{ report.treatment_plan }}</p>
+            </div>
+
+            {% if report.blood_pressure or report.heart_rate or report.temperature %}
+            <hr>
+            <h5 class="mb-3">Vital Signs</h5>
+            <div class="row">
+                {% if report.blood_pressure %}
+                <div class="col-md-4">
+                    <p><strong>Blood Pressure:</strong> {{ report.blood_pressure }} mmHg</p>
+                </div>
+                {% endif %}
+                {% if report.heart_rate %}
+                <div class="col-md-4">
+                    <p><strong>Heart Rate:</strong> {{ report.heart_rate }} bpm</p>
+                </div>
+                {% endif %}
+                {% if report.temperature %}
+                <div class="col-md-4">
+                    <p><strong>Temperature:</strong> {{ report.temperature }}°F</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if report.lab_results %}
+            <div class="mb-3">
+                <h5 class="text-muted">Lab Results</h5>
+                <p>{{ report.lab_results }}</p>
+            </div>
+            {% endif %}
+
+            {% if report.notes %}
+            <div class="mb-3">
+                <h5 class="text-muted">Notes</h5>
+                <p>{{ report.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
